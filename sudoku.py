@@ -21,6 +21,7 @@ class Sudoku:
 
         self.grid = starting_grid
         self.locked_positions = set() 
+        self.dimension = len(self.grid)
         for i in range(len(starting_grid)):
             for j in range(len(starting_grid[i])):
                 if starting_grid[i][j] is not None:
@@ -46,7 +47,7 @@ class Sudoku:
         for i, row in enumerate(self.grid):
             for j in range(len(row)):
                 if (i,j) not in self.locked_positions:
-                    self.grid[i][j] = rand.randint(1,10)
+                    self.grid[i][j] = rand.randint(1,self.dimension+1)
 
     # def disturb(self):
     #     """
