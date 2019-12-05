@@ -54,37 +54,78 @@ class Sudoku:
     def exec(self, algorithm):
         
         board = self.grid
+        boardC = self.countFunc(board)
 
-        while self.isNotSolution(board):
-            board = algorithm.disturb()
-
+        while self.isNotSolution(boardC):
+            algBoard = algorithm.disturb(board, self.locked_positions)
+            print(algBoard)
+            (newBoard, newBoardC) = self.heuristic(board, boardC, algBoard)
+            board = newBoard
+            boardC = newBoardC
+            print(board)
         return board
 
-    def isNotSolution(self, board):
-        return self.heuristic(board) != 0
+    def isNotSolution(self, boardC):
+        return boardC != 0
 
-    def heuristic(self, board):
+    def heuristic(self, board, boardC, algBoard):
+        algBoardC = self.countFunc(algBoard)
+        if algBoardC < boardC:
+            return (algBoard, algBoardC)
+        return (board, boardC)
 
-
-        for i in range(len(board)):
-            for j in range(len(board[i])):
+    def countFunc(self, board):
+        count = 0
+        for i in [0,1,2,3]:
+            for j in [0,1,2,3]:
         
                 quadrant = self.defineQuadrant(i, j)
-                if board[i][j] is not None:
-                    self.locked_positions.add((i,j))
+                count += self.countQuadrantOccur(board, (i,j), quadrant)
+                count += self.countRowOccur(board, (i,j))
+                count += self.countColumnOccur(board, (i,j))
 
-        return 0
+        return count
 
     def defineQuadrant(self, i, j):
         if i < 2:
             if j < 2:
-                return 1
+                return (0,0)
             else:
-                return 2
+                return (0,2)
         else:
             if j < 2:
-                return 3
+                return (2,0)
             else:
-                return 4
+                return (2,2)
 
-    
+    def countQuadrantOccur(self, board, el, quadr):
+        (el1, el2) = el
+        (q1, q2) = quadr
+        count = 0
+        i = 0
+        while i < 2:
+            j = 0
+            while j < 2:
+                if board[el1][el2] == board[q1 + i][q2 + j]:
+                    count += 1
+                j += 1
+            i += 1
+        return count - 1
+
+    def countRowOccur(self, board, el):
+        (elI, elJ) = el
+        count = 0
+        for j in [0,1,2,3]:
+            if board[elI][j] == board[elI][elJ]:
+                count += 1
+        
+        return count - 1
+        
+    def countColumnOccur(self, board, el):
+        (elI, elJ) = el
+        count = 0
+        for i in [0,1,2,3]:
+            if board[i][elJ] == board[elI][elJ]:
+                count += 1
+        
+        return count - 1

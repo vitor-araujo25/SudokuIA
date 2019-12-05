@@ -15,8 +15,10 @@ def main():
 
     board.generate_new_individual()
 
+    print(board)
+
     # selecting hillclimbing
-    board.exec(hillclimbing.HillClimb(board))
+    board.exec(hillclimbing.HillClimb())
 
     # selecting genetic
     # board = board.exec(genetic.Genetic(board))
