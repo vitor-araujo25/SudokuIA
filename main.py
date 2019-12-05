@@ -1,4 +1,6 @@
 import sudoku
+import genetic
+import hillclimbing
 
 def main():
     grid = [
@@ -12,6 +14,12 @@ def main():
     print(board)
 
     board.generate_new_individual()
+
+    # selecting hillclimbing
+    board.exec(hillclimbing.HillClimb(board))
+
+    # selecting genetic
+    # board = board.exec(genetic.Genetic(board))
 
     print(board)
 
