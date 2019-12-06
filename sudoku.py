@@ -2,8 +2,6 @@
 Base definition of the Sudoku board and associated information, such as individuals and fitness function.
 """
 import numpy.random as rand
-import hillclimbing
-import genetic
 
 class BoardFormatException(Exception):
     pass
@@ -56,7 +54,6 @@ class Sudoku:
             for j in range(len(row)):
                 if (i,j) not in self.locked_positions:
                     self.grid[i][j] = rand.randint(1,self.dimension+1)
-
 
     def disturb(self):
         """
