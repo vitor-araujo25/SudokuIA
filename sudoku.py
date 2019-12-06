@@ -2,13 +2,14 @@
 Base definition of the Sudoku board and associated information, such as individuals and fitness function.
 """
 import numpy.random as rand
-
+import hillclimbing
+import genetic
 
 class BoardFormatException(Exception):
     pass
 
 class Sudoku:
-    def __init__(self, starting_grid):
+    def __init__(self, starting_grid, locked_positions=None):
         """
         Expects a list with numbers in the INITIAL board written sequentially from top to bottom and left to right.
         Empty positions should have value None. Boards should be square.
@@ -20,12 +21,19 @@ class Sudoku:
             raise
 
         self.grid = starting_grid
-        self.locked_positions = set() 
         self.dimension = len(self.grid)
-        for i in range(len(starting_grid)):
-            for j in range(len(starting_grid[i])):
-                if starting_grid[i][j] is not None:
-                    self.locked_positions.add((i,j))
+        self.locked_positions = set()
+
+        if locked_positions:
+            for i in range(len(starting_grid)):
+                for j in range(len(starting_grid[i])):
+                    if (i,j) in locked_positions:
+                        self.locked_positions.add((i,j))
+        else:
+            for i in range(len(starting_grid)):
+                for j in range(len(starting_grid[i])):
+                    if starting_grid[i][j] is not None:
+                        self.locked_positions.add((i,j))
 
     def __str__(self):
         rep = ""
@@ -49,7 +57,19 @@ class Sudoku:
                 if (i,j) not in self.locked_positions:
                     self.grid[i][j] = rand.randint(1,self.dimension+1)
 
-    # def disturb(self):
-    #     """
-    #     Creates a new individual by introducing a minor disturbance in the board
-    #     """
+
+    def disturb(self):
+        """
+        Creates a new individual by introducing a minor disturbance in the board
+        """
+        i = rand.randint(1,self.dimension)
+        j = rand.randint(1,self.dimension)
+        while (i,j) in self.locked_positions:
+            i = rand.randint(1,self.dimension)
+            j = rand.randint(1,self.dimension)
+        
+        self.grid[i][j] = rand.randint(self.dimension+1)
+
+    def copy_board(self):
+        board = [[element for element in row] for row in self.grid]
+        return Sudoku(board, self.locked_positions)

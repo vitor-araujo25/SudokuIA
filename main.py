@@ -1,4 +1,6 @@
 import sudoku
+import genetic
+import hillclimbing
 
 def main():
     grid = [
@@ -8,12 +10,22 @@ def main():
         [None,None,2,1]
     ]
     board = sudoku.Sudoku(grid)
-    
     print(board)
 
     board.generate_new_individual()
+    print("Starting individual:\n{}\n".format(board))
 
-    print(board)
+    HC = hillclimbing.HillClimb(board,100000)
+    print("Starting heuristic value: {}".format(HC.found_value))
+
+    # selecting hillclimbing
+    final_board, final_value = HC.exec()
+
+    print("{}\n\nFinal heuristic value: {}".format(final_board, final_value))
+    # selecting genetic
+    # board = board.exec(genetic.Genetic(board))
+
+    # print(board)
 
 if __name__ == "__main__":
     main()
