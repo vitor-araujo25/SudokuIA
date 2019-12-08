@@ -82,8 +82,9 @@ class Genetic:
 
     def heuristic(self, board):
         count = 0
-        for i in [0,1,2,3]:
-            for j in [0,1,2,3]:
+        for i in range(9):
+            for j in range(9):
+        
                 quadrant = self.defineQuadrant(i, j)
                 count += self.countQuadrantOccur(board, (i,j), quadrant)
                 count += self.countRowOccur(board, (i,j))
@@ -92,16 +93,30 @@ class Genetic:
         return count
 
     def defineQuadrant(self, i, j):
-        if i < 2:
-            if j < 2:
+        # quadrantes a esquerda
+        if i < 3:
+            if j < 3:
                 return (0,0)
+            if j < 6:
+                return (0,3)
             else:
-                return (0,2)
+                return (0,6)
+        # quadrantes no centro
+        if i < 6:
+            if j < 3:
+                return (3,0)
+            if j < 6:
+                return (3,3)
+            else:
+                return (3,6)
+        # quadrantes da direita
         else:
-            if j < 2:
-                return (2,0)
+            if j < 6:
+                return (6,0)
+            if j < 6:
+                return (6,3)
             else:
-                return (2,2)
+                return (6,6)
 
     def countQuadrantOccur(self, board, el, quadr):
         (el1, el2) = el
@@ -109,9 +124,9 @@ class Genetic:
         element_index = board.convert_coordinates(el1,el2)
         count = 0
         i = 0
-        while i < 2:
+        while i < 3:
             j = 0
-            while j < 2:
+            while j < 3:
                 quad_index = board.convert_coordinates(q1+i, q2+j)
                 if board.chromosome[element_index] == board.chromosome[quad_index]:
                     count += 1
@@ -123,18 +138,18 @@ class Genetic:
         (elI, elJ) = el
         count = 0
         element_index = board.convert_coordinates(elI, elJ)
-        for j in [0,1,2,3]:
+        for j in range(9):
             row_index = board.convert_coordinates(elI, j)
             if board.chromosome[row_index] == board.chromosome[element_index]:
                 count += 1
         
         return count - 1
-        
+    
     def countColumnOccur(self, board, el):
         (elI, elJ) = el
         count = 0
         element_index = board.convert_coordinates(elI, elJ)
-        for i in [0,1,2,3]:
+        for i in range(9):
             col_index = board.convert_coordinates(i, elJ)
             if board.chromosome[col_index] == board.chromosome[element_index]:
                 count += 1
