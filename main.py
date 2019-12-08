@@ -4,17 +4,28 @@ import hillclimbing
 import argparse
 
 def main():
-
     parser = argparse.ArgumentParser(description="Runs hillclimbing or genetic algorithm to solve a given sudoku puzzle.")
     parser.add_argument('algorithm', type=str, help="Either \"hillclimbing\" or \"genetic\".")
     args = parser.parse_args()
     algorithm = args.algorithm
 
+    # grid = [
+    #     [3,    None, None, 2   ],
+    #     [None, 1,    4,    None],
+    #     [1,    2,    None, 4   ],
+    #     [None, None, 2,    1   ]
+    # ]
+
     grid = [
-        [3,None,None,2],
-        [None,1,4,None],
-        [1,2,None,4],
-        [None,None,2,1]
+        [None,None,None,7,   None,None,None,None,None],
+        [1,   None,None,None,None,None,None,None,None],
+        [None,None,None,4,   3,   None,2,   None,None],
+        [None,None,None,None,None,None,None,None,6   ],
+        [None,None,None,5,   None,9,   None,None,None],
+        [None,None,None,None,None,None,4,   1,   8   ],
+        [None,None,None,None,8,   1,   None,None,None],
+        [None,None,2,   None,None,None,None,5,   None],
+        [None,4,   None,None,None,None,3,   None,None],
     ]
 
     board = sudoku.Sudoku(grid)
@@ -32,7 +43,7 @@ def main():
 
         print("{}\n\nFinal heuristic value: {}".format(final_board, final_value))
     
-    if algorithm == "genetic":
+    elif algorithm == "genetic":
         print(board)
         # selecting genetic
         # gen = genetic.Genetic(board)

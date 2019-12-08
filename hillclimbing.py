@@ -44,8 +44,9 @@ class HillClimb:
 
     def countFunc(self, board):
         count = 0
-        for i in [0,1,2,3]:
-            for j in [0,1,2,3]:
+        for i in range(9):
+            for j in range(9):
+        
                 quadrant = self.defineQuadrant(i, j)
                 count += self.countQuadrantOccur(board, (i,j), quadrant)
                 count += self.countRowOccur(board, (i,j))
@@ -54,25 +55,39 @@ class HillClimb:
         return count
 
     def defineQuadrant(self, i, j):
-        if i < 2:
-            if j < 2:
+        # quadrantes a esquerda
+        if i < 3:
+            if j < 3:
                 return (0,0)
+            if j < 6:
+                return (0,3)
             else:
-                return (0,2)
+                return (0,6)
+        # quadrantes no centro
+        if i < 6:
+            if j < 3:
+                return (3,0)
+            if j < 6:
+                return (3,3)
+            else:
+                return (3,6)
+        # quadrantes da direita
         else:
-            if j < 2:
-                return (2,0)
+            if j < 6:
+                return (6,0)
+            if j < 6:
+                return (6,3)
             else:
-                return (2,2)
+                return (6,6)
 
     def countQuadrantOccur(self, board, el, quadr):
         (el1, el2) = el
         (q1, q2) = quadr
         count = 0
         i = 0
-        while i < 2:
+        while i < 3:
             j = 0
-            while j < 2:
+            while j < 3:
                 if board.grid[el1][el2] == board.grid[q1 + i][q2 + j]:
                     count += 1
                 j += 1
@@ -82,7 +97,7 @@ class HillClimb:
     def countRowOccur(self, board, el):
         (elI, elJ) = el
         count = 0
-        for j in [0,1,2,3]:
+        for j in range(9):
             if board.grid[elI][j] == board.grid[elI][elJ]:
                 count += 1
         
@@ -91,8 +106,9 @@ class HillClimb:
     def countColumnOccur(self, board, el):
         (elI, elJ) = el
         count = 0
-        for i in [0,1,2,3]:
+        for i in range(9):
             if board.grid[i][elJ] == board.grid[elI][elJ]:
                 count += 1
         
         return count - 1
+
