@@ -55,30 +55,83 @@ class Genetic:
         self.gen_max = max_generations
 
     def exec(self):
-        old_gen = list(self.population)
-        current_values = [ind[1] for ind in self.population]
-        new_gen = []
-        probability_vector = np.array(current_values)/sum(current_values)
-        intermediate_gen = np.random.choice(old_gen, self.population_size-1, p=probability_vector)
         
-        if self.elitism:
-            best_value = max(current_values)
-            best_in_old_gen = old_gen[best_value]
-            intermediate_gen = np.append(intermediate_gen, best_in_old_gen)
-        else:
-            new_ind = np.random.choice(old_gen, 1, p=probability_vector)
-            intermediate_gen = np.append(intermediate_gen, new_ind[0])
+        for i in range(self.gen_max):
+
+            old_gen = self.population
+            current_values = [ind[1] for ind in old_gen]
+            probability_vector = np.array(current_values)/sum(current_values)
+            intermediate_gen2 = []  
+            new_gen = []
+        
+            if self.elitism:
+                best_value = max(current_values)
+                best_in_old_gen = old_gen[best_value]
+                new_gen.append(best_in_old_gen)
+                intermediate_gen1 = np.random.choice(old_gen, self.population_size-1, p=probability_vector)
+            else:
+                intermediate_gen1 = np.random.choice(old_gen, self.population_size, p=probability_vector)
+
+            intermediate_gen1 = list(intermediate_gen1)
+
+            while len(intermediate_gen1) > 0:
+                size = len(intermediate_gen1)
+                
+                while True:
+                    pos_indA = np.random.randint(0,size)
+                    pos_indB = np.random.randint(0,size)
+                    if pos_indA != pos_indB:
+                        break
+
+                try:
+                    candidateA = intermediate_gen1.pop(pos_indA)
+                    candidateB = intermediate_gen1.pop(pos_indB)
+                except IndexError:
+                    intermediate_gen2.append(candidateA)
+                    break
+
+                crossed_couple = self.crossover(candidateA, candidateB)
+
+                [intermediate_gen2.append(i) for i in crossed_couple]
+
+            while len(intermediate_gen2) > 0:
+                size = len(intermediate_gen2)
+                candidate = intermediate_gen2.pop(np.random.randint(0,size))
+
+                new_gen.append(self.mutate(candidate))
+
+            #list with tuples (board, heuristic_value) for the new population
+            self.population = list(new_gen)
+
+        max_value = self.population[0][1]
+        for ind in self.population:
+            if ind[1] > max_value:
+                best_in_generation = ind
+
+        return best_in_generation
         
 
     def crossover(self, indA, indB):
-        pass
+
+        newA = indA
+        newB = indB
+        if np.random.rand() > self.crossover_rate:
+            #cross...
+            pass
+
+        return (newA, newB)
 
     def mutate(self, ind):
-        pass
+        
+        new_ind = ind
+        if np.random.rand() < self.mutation_rate:
+            #mutate...
+            new_ind[1] = self.recalculate_heuristic(new_ind.chromosome)
 
+        return new_ind
 
-    def isNotSolution(self, boardC):
-        return boardC != 0
+    def recalculate_heuristic(self, ind):
+        return self.heuristic(ind)
 
     def heuristic(self, board):
         count = 0
