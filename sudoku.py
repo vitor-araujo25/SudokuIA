@@ -64,7 +64,7 @@ class Sudoku:
         while (i,j) in self.locked_positions:
             i = rand.randint(1,self.dimension)
             j = rand.randint(1,self.dimension)
-        
+       
         self.grid[i][j] = rand.randint(self.dimension+1)
 
     def copy_board(self):
