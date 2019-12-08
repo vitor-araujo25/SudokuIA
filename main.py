@@ -28,9 +28,8 @@ def main():
         [None,4,   None,None,None,None,3,   None,None],
     ]
 
-    board = sudoku.Sudoku(grid)
-
     if algorithm == "hillclimbing":
+        board = sudoku.Sudoku(grid)
         print(board)
         board.generate_new_individual()
         print("Starting individual:\n{}\n".format(board))
@@ -45,9 +44,9 @@ def main():
     
     elif algorithm == "genetic":
         print(board)
+
         # selecting genetic
-        # gen = genetic.Genetic(board)
-        print("genetic")
+        GA = genetic.Genetic(grid, population_size=2)
 
     else:
         parser.print_help()

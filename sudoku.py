@@ -14,7 +14,7 @@ class Sudoku:
         """
         try:
             if any([len(starting_grid) != len(starting_grid[i]) for i in range(len(starting_grid))]):
-                raise BoardFormatException
+                raise BoardFormatException("The Sudoku board must be square shaped!")
         except (TypeError, IndexError):
             raise
 
