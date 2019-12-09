@@ -4,8 +4,11 @@ import numpy as np
 class SudokuChromosome(sudoku.Sudoku):
     def __init__(self, board, locked_positions=None):
         super().__init__(board, locked_positions)
+
         self.chromosome = []
-        self.locked_positions = set([self.convert_coordinates(pos[0], pos[1]) for pos in self.locked_positions])
+        self.locked_indices = set([self.convert_coordinates(pos[0], pos[1]) for pos in self.locked_positions])
+
+        #PROBLEMA: define o cromossomo como sendo o grid inteiro, mas o grid inteiro não pode mudar
         for row in self.grid:
             for element in row:
                 self.chromosome.append(element)
@@ -15,8 +18,9 @@ class SudokuChromosome(sudoku.Sudoku):
         """
         Creates an entirely new individual from a starting grid, skipping locked positions.
         """
+        #PROBLEMA: cria um array de 81 posições aleatório (respeitando as posições travadas)
         for i in range(len(self.chromosome)):
-            if i not in self.locked_positions:
+            if i not in self.locked_indices:
                 self.chromosome[i] = np.random.randint(1,self.dimension+1)
     
     #Override
@@ -33,8 +37,17 @@ class SudokuChromosome(sudoku.Sudoku):
 
         return rep
 
+    #PROBLEMA: não funciona, já que o cromossomo não tem mais todo o tabuleiro nele
+    #preciso achar outra maneira de converter posições do cromossomo em posições do tabuleiro
     def convert_coordinates(self, i, j):
         return self.dimension*i + j
+
+    #PROBLEMA: tentativa de fazer uma função pra manter o cromossomo e o grid sincronizados (n sei se precisa)
+    def update_grid(self):
+        for i in range(self.dimension):
+            for j in range(self.dimension):
+                if (i,j) not in locked_positions
+
 
 class Genetic:
 
@@ -64,6 +77,7 @@ class Genetic:
             intermediate_gen2 = []  
             new_gen = []
         
+            #mating pool formation
             if self.elitism:
                 best_value = max(current_values)
                 best_in_old_gen = old_gen[best_value]
@@ -74,6 +88,7 @@ class Genetic:
 
             intermediate_gen1 = list(intermediate_gen1)
 
+            #crossover
             while len(intermediate_gen1) > 0:
                 size = len(intermediate_gen1)
                 
@@ -94,6 +109,7 @@ class Genetic:
 
                 [intermediate_gen2.append(i) for i in crossed_couple]
 
+            #mutations
             while len(intermediate_gen2) > 0:
                 size = len(intermediate_gen2)
                 candidate = intermediate_gen2.pop(np.random.randint(0,size))
@@ -103,6 +119,8 @@ class Genetic:
             #list with tuples (board, heuristic_value) for the new population
             self.population = list(new_gen)
 
+        #end of selection loop
+
         max_value = self.population[0][1]
         for ind in self.population:
             if ind[1] > max_value:
@@ -111,13 +129,25 @@ class Genetic:
         return best_in_generation
         
 
+    def chromosome_split(self, chromosome, slicing_point):
+        left = chromosome[:slicing_point]
+        right = chromosome[slicing_point:]
+        return [left,right]
+
     def crossover(self, indA, indB):
 
         newA = indA
         newB = indB
         if np.random.rand() > self.crossover_rate:
-            #cross...
-            pass
+            crossing_site = np.random.randint(0,len(newA[0].chromosome))
+            splitA = self.chromosome_split(newA[0].chromosome, crossing_site)
+            splitB = self.chromosome_split(newB[0].chromosome, crossing_site)
+
+            #swaps the right-most part of the chromosomes, cut on the crossing_site
+            splitA[1], splitB[1] = splitB[1], splitA[1]
+
+            newA[0].chromosome = splitA[0] + splitA[1]
+            newB[0].chromosome = splitB[0] + splitB[1]
 
         return (newA, newB)
 
@@ -171,6 +201,7 @@ class Genetic:
             else:
                 return (6,6)
 
+    #PROBLEMA: preciso voltar o usar o grid aqui e nas funções abaixo, pq o cromossomo não vai ter mais as informações de todo o tabuleiro
     def countQuadrantOccur(self, board, el, quadr):
         (el1, el2) = el
         (q1, q2) = quadr
