@@ -14,7 +14,7 @@ class Sudoku:
         """
         try:
             if any([len(starting_grid) != len(starting_grid[i]) for i in range(len(starting_grid))]):
-                raise BoardFormatException
+                raise BoardFormatException("The Sudoku board must be square shaped!")
         except (TypeError, IndexError):
             raise
 
@@ -59,13 +59,13 @@ class Sudoku:
         """
         Creates a new individual by introducing a minor disturbance in the board
         """
-        i = rand.randint(1,self.dimension)
-        j = rand.randint(1,self.dimension)
+        i = rand.randint(0,self.dimension)
+        j = rand.randint(0,self.dimension)
         while (i,j) in self.locked_positions:
-            i = rand.randint(1,self.dimension)
-            j = rand.randint(1,self.dimension)
+            i = rand.randint(0,self.dimension)
+            j = rand.randint(0,self.dimension)
        
-        self.grid[i][j] = rand.randint(self.dimension+1)
+        self.grid[i][j] = rand.randint(1,self.dimension+1)
 
     def copy_board(self):
         board = [[element for element in row] for row in self.grid]
