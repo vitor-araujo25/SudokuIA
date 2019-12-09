@@ -43,10 +43,14 @@ def main():
         print("{}\n\nFinal heuristic value: {}".format(final_board, final_value))
     
     elif algorithm == "genetic":
-        print(board)
-
         # selecting genetic
-        GA = genetic.Genetic(grid, population_size=2)
+        GA = genetic.Genetic(grid, population_size=4, max_generations=1)
+        for i in GA.population:
+            print(str(i[0]),"\n\n")
+        best = GA.exec()
+
+        print("Best: \n{}\n\nHeuristic value: {}\n".format(best[0],best[1]))
+
 
     else:
         parser.print_help()

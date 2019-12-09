@@ -8,7 +8,6 @@ class SudokuChromosome(sudoku.Sudoku):
         self.chromosome = []
         self.locked_indices = set([self.convert_coordinates(pos[0], pos[1]) for pos in self.locked_positions])
 
-        #PROBLEMA: define o cromossomo como sendo o grid inteiro, mas o grid inteiro não pode mudar
         for row in self.grid:
             for element in row:
                 self.chromosome.append(element)
@@ -18,7 +17,6 @@ class SudokuChromosome(sudoku.Sudoku):
         """
         Creates an entirely new individual from a starting grid, skipping locked positions.
         """
-        #PROBLEMA: cria um array de 81 posições aleatório (respeitando as posições travadas)
         for i in range(len(self.chromosome)):
             if i not in self.locked_indices:
                 self.chromosome[i] = np.random.randint(1,self.dimension+1)
@@ -37,21 +35,27 @@ class SudokuChromosome(sudoku.Sudoku):
 
         return rep
 
-    #PROBLEMA: não funciona, já que o cromossomo não tem mais todo o tabuleiro nele
-    #preciso achar outra maneira de converter posições do cromossomo em posições do tabuleiro
+    #Override
+    def disturb(self):
+        """
+        Creates a new individual by introducing a minor disturbance in the board
+        """
+        index = np.random.randint(self.dimension)
+        while index in self.locked_indices:
+            index = np.random.randint(self.dimension)
+       
+        self.chromosome[index] = np.random.randint(1,self.dimension+1)
+
     def convert_coordinates(self, i, j):
         return self.dimension*i + j
-
-    #PROBLEMA: tentativa de fazer uma função pra manter o cromossomo e o grid sincronizados (n sei se precisa)
-    def update_grid(self):
-        for i in range(self.dimension):
-            for j in range(self.dimension):
-                if (i,j) not in locked_positions
 
 
 class Genetic:
 
     def __init__(self, board, crossover_rate=0.8, mutation_rate=0.03, population_size=10000, elitism=False, max_generations=100):
+        
+        if population_size % 2 != 0:
+            raise ValueError("Population size must be an even number!")
         
         initial_pop = [SudokuChromosome(board) for i in range(population_size)]
         for i in initial_pop:
@@ -76,26 +80,29 @@ class Genetic:
             probability_vector = np.array(current_values)/sum(current_values)
             intermediate_gen2 = []  
             new_gen = []
-        
+
             #mating pool formation
             if self.elitism:
                 best_value = max(current_values)
-                best_in_old_gen = old_gen[best_value]
+                best_in_old_gen = old_gen[old_gen.index(best_value)]
                 new_gen.append(best_in_old_gen)
-                intermediate_gen1 = np.random.choice(old_gen, self.population_size-1, p=probability_vector)
+                old_gen = np.array(old_gen)
+                chosen_indices = np.random.choice(len(old_gen), self.population_size-1, p=probability_vector)
             else:
-                intermediate_gen1 = np.random.choice(old_gen, self.population_size, p=probability_vector)
-
+                old_gen = np.array(old_gen)
+                chosen_indices = np.random.choice(len(old_gen), self.population_size, p=probability_vector)
+                
+            intermediate_gen1 = old_gen[chosen_indices]
             intermediate_gen1 = list(intermediate_gen1)
 
             #crossover
             while len(intermediate_gen1) > 0:
                 size = len(intermediate_gen1)
-                
+
                 while True:
                     pos_indA = np.random.randint(0,size)
                     pos_indB = np.random.randint(0,size)
-                    if pos_indA != pos_indB:
+                    if pos_indA != pos_indB or size <= 1:
                         break
 
                 try:
@@ -104,16 +111,15 @@ class Genetic:
                 except IndexError:
                     intermediate_gen2.append(candidateA)
                     break
-
+                    
                 crossed_couple = self.crossover(candidateA, candidateB)
-
+                print(crossed_couple)
                 [intermediate_gen2.append(i) for i in crossed_couple]
 
             #mutations
             while len(intermediate_gen2) > 0:
                 size = len(intermediate_gen2)
                 candidate = intermediate_gen2.pop(np.random.randint(0,size))
-
                 new_gen.append(self.mutate(candidate))
 
             #list with tuples (board, heuristic_value) for the new population
@@ -121,9 +127,10 @@ class Genetic:
 
         #end of selection loop
 
-        max_value = self.population[0][1]
+        min_value = self.population[0][1]
+        best_in_generation = self.population[0]
         for ind in self.population:
-            if ind[1] > max_value:
+            if ind[1] < min_value:
                 best_in_generation = ind
 
         return best_in_generation
@@ -143,7 +150,7 @@ class Genetic:
             splitA = self.chromosome_split(newA[0].chromosome, crossing_site)
             splitB = self.chromosome_split(newB[0].chromosome, crossing_site)
 
-            #swaps the right-most part of the chromosomes, cut on the crossing_site
+            #swaps the right-most part of the chromosomes, that were cut on the crossing_site
             splitA[1], splitB[1] = splitB[1], splitA[1]
 
             newA[0].chromosome = splitA[0] + splitA[1]
@@ -155,8 +162,9 @@ class Genetic:
         
         new_ind = ind
         if np.random.rand() < self.mutation_rate:
-            #mutate...
-            new_ind[1] = self.recalculate_heuristic(new_ind.chromosome)
+        # if True:
+            new_ind[0].disturb()
+            new_ind[1] = self.recalculate_heuristic(new_ind[0].chromosome)
 
         return new_ind
 
@@ -165,52 +173,64 @@ class Genetic:
 
     def heuristic(self, board):
         count = 0
-        for i in range(9):
-            for j in range(9):
-        
-                quadrant = self.defineQuadrant(i, j)
+        for i in range(board.dimension):
+            for j in range(board.dimension):
+                quadrant = self.defineQuadrant(i, j, board.dimension)
                 count += self.countQuadrantOccur(board, (i,j), quadrant)
                 count += self.countRowOccur(board, (i,j))
                 count += self.countColumnOccur(board, (i,j))
 
         return count
 
-    def defineQuadrant(self, i, j):
-        # quadrantes a esquerda
-        if i < 3:
-            if j < 3:
-                return (0,0)
-            if j < 6:
-                return (0,3)
+    def defineQuadrant(self, i, j, dim):
+        if dim == 9:
+            # quadrantes a esquerda
+            if i < 3:
+                if j < 3:
+                    return (0,0)
+                if j < 6:
+                    return (0,3)
+                else:
+                    return (0,6)
+            # quadrantes no centro
+            if i < 6:
+                if j < 3:
+                    return (3,0)
+                if j < 6:
+                    return (3,3)
+                else:
+                    return (3,6)
+            # quadrantes da direita
             else:
-                return (0,6)
-        # quadrantes no centro
-        if i < 6:
-            if j < 3:
-                return (3,0)
-            if j < 6:
-                return (3,3)
+                if j < 6:
+                    return (6,0)
+                if j < 6:
+                    return (6,3)
+                else:
+                    return (6,6)
+        elif dim == 4:
+            if i < 2:
+                if j < 2:
+                    return (0,0)
+                else:
+                    return (0,2)
             else:
-                return (3,6)
-        # quadrantes da direita
+                if j < 2:
+                    return (2,0)
+                else:
+                    return (2,2)
         else:
-            if j < 6:
-                return (6,0)
-            if j < 6:
-                return (6,3)
-            else:
-                return (6,6)
+            raise ValueError
 
-    #PROBLEMA: preciso voltar o usar o grid aqui e nas funções abaixo, pq o cromossomo não vai ter mais as informações de todo o tabuleiro
     def countQuadrantOccur(self, board, el, quadr):
         (el1, el2) = el
         (q1, q2) = quadr
         element_index = board.convert_coordinates(el1,el2)
         count = 0
         i = 0
-        while i < 3:
+        while i < np.sqrt(board.dimension):
             j = 0
-            while j < 3:
+            while j < np.sqrt(board.dimension):
                 quad_index = board.convert_coordinates(q1+i, q2+j)
                 if board.chromosome[element_index] == board.chromosome[quad_index]:
                     count += 1
@@ -222,7 +242,7 @@ class Genetic:
         (elI, elJ) = el
         count = 0
         element_index = board.convert_coordinates(elI, elJ)
-        for j in range(9):
+        for j in range(board.dimension):
             row_index = board.convert_coordinates(elI, j)
             if board.chromosome[row_index] == board.chromosome[element_index]:
                 count += 1
@@ -233,9 +253,8 @@ class Genetic:
         (elI, elJ) = el
         count = 0
         element_index = board.convert_coordinates(elI, elJ)
-        for i in range(9):
+        for i in range(board.dimension):
             col_index = board.convert_coordinates(i, elJ)
             if board.chromosome[col_index] == board.chromosome[element_index]:
                 count += 1
-        
         return count - 1

@@ -59,13 +59,13 @@ class Sudoku:
         """
         Creates a new individual by introducing a minor disturbance in the board
         """
-        i = rand.randint(1,self.dimension)
-        j = rand.randint(1,self.dimension)
+        i = rand.randint(0,self.dimension)
+        j = rand.randint(0,self.dimension)
         while (i,j) in self.locked_positions:
-            i = rand.randint(1,self.dimension)
-            j = rand.randint(1,self.dimension)
+            i = rand.randint(0,self.dimension)
+            j = rand.randint(0,self.dimension)
        
-        self.grid[i][j] = rand.randint(self.dimension+1)
+        self.grid[i][j] = rand.randint(1,self.dimension+1)
 
     def copy_board(self):
         board = [[element for element in row] for row in self.grid]
